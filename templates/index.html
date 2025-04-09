@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Newspaper Article Generator</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --medium-gray: #ddd;
+            --dark-gray: #999;
+            --white: #fff;
+            --newspaper-font: 'Georgia', 'Times New Roman', serif;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: var(--light-gray);
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 20px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--dark-gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Main Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section, .output-section {
+                max-width: 100%;
+            }
+        }
+        
+        /* Input Section */
+        .input-section {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: inline-block;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-list {
+            margin-top: 10px;
+            list-style: none;
+        }
+        
+        .file-list li {
+            background-color: var(--light-gray);
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-file {
+            color: var(--accent-color);
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .checkbox-group {
+            margin-top: 15px;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        button.generate-btn {
+            display: block;
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        
+        button.generate-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Output Section */
+        .output-section {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .article-container {
+            flex-grow: 1;
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 6px;
+            font-family: var(--newspaper-font);
+            overflow-y: auto;
+            min-height: 300px;
+        }
+        
+        .headline {
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+            font-family: var(--newspaper-font);
+        }
+        
+        .article-text {
+            font-size: 18px;
+            line-height: 1.5;
+            text-align: justify;
+            white-space: pre-line;
+        }
+        
+        .output-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .action-btn {
+            padding: 10px 15px;
+            flex: 1;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background-color: #283747;
+        }
+        
+        .download-text-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .download-text-btn:hover {
+            background-color: #1a2530;
+        }
+        
+        .download-pdf-btn {
+            background-color: #2980b9;
+            color: white;
+        }
+        
+        .download-pdf-btn:hover {
+            background-color: #2471a3;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            border: 4px solid var(--light-gray);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Status Messages */
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .error {
+            background-color: #fde8e8;
+            color: #9b2c2c;
+            border: 1px solid #feb2b2;
+        }
+        
+        .success {
+            background-color: #e6fffa;
+            color: #046c4e;
+            border: 1px solid #9ae6b4;
+        }
+        
+        /* Initial state */
+        .output-section.empty-state {
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .empty-state-message {
+            color: var(--dark-gray);
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        
+        .empty-state-message i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>GenAI Newspaper Article Generator</h1>
+        <p>Generate concise newspaper articles using RAG and LangChain technology</p>
+    </header>
+    
+    <div class="container">
+        <section class="input-section">
+            <h2>Article Input</h2>
+            <div class="input-group">
+                <label for="topic">Topic:</label>
+                <input type="text" id="topic" placeholder="e.g., Artificial Intelligence, DeepSeek" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Upload Context Documents (Optional):</label>
+                <div class="file-input-wrapper">
+                    <span class="file-input-button">Select Files</span>
+                    <input type="file" id="file-input" class="file-input" multiple accept=".pdf,.docx,.txt">
+                </div>
+                <p><small>Accepted formats: PDF, DOCX, TXT (Max 16MB)</small></p>
+                <ul id="file-list" class="file-list"></ul>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="use-wikipedia" checked>
+                <label for="use-wikipedia">Use Wikipedia as information source</label>
+            </div>
+            
+            <button id="generate-btn" class="generate-btn">Generate Article</button>
+            
+            <div id="status" class="status"></div>
+            <div id="spinner" class="spinner"></div>
+        </section>
+        
+        <section id="output-section" class="output-section empty-state">
+            <div id="empty-state" class="empty-state-message">
+                <i>📰</i>
+                <p>Your generated article will appear here</p>
+            </div>
+            
+            <div id="article-container" class="article-container" style="display: none;">
+                <div id="headline" class="headline"></div>
+                <div id="article-text" class="article-text"></div>
+            </div>
+            
+            <div id="output-actions" class="output-actions" style="display: none;">
+                <button id="copy-btn" class="action-btn copy-btn">Copy to Clipboard</button>
+                <button id="download-text-btn" class="action-btn download-text-btn">Download Text</button>
+                <button id="download-pdf-btn" class="action-btn download-pdf-btn">Download PDF</button>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        // Store selected files
+        let selectedFiles = [];
+        
+        // DOM elements
+        const topicInput = document.getElementById('topic');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const useWikipedia = document.getElementById('use-wikipedia');
+        const generateBtn = document.getElementById('generate-btn');
+        const statusElement = document.getElementById('status');
+        const spinner = document.getElementById('spinner');
+        const outputSection = document.getElementById('output-section');
+        const emptyState = document.getElementById('empty-state');
+        const articleContainer = document.getElementById('article-container');
+        const headline = document.getElementById('headline');
+        const articleText = document.getElementById('article-text');
+        const outputActions = document.getElementById('output-actions');
+        const copyBtn = document.getElementById('copy-btn');
+        const downloadTextBtn = document.getElementById('download-text-btn');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function(event) {
+            const files = event.target.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                // Check file type
+                const validTypes = ['.pdf', '.docx', '.txt'];
+                const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                
+                if (!validTypes.includes(fileExt)) {
+                    showStatus('Invalid file type. Only PDF, DOCX, and TXT files are allowed.', 'error');
+                    continue;
+                }
+                
+                // Check file size (max 16MB)
+                if (file.size > 16 * 1024 * 1024) {
+                    showStatus('File too large. Maximum size is 16MB.', 'error');
+                    continue;
+                }
+                
+                selectedFiles.push(file);
+                addFileToList(file);
+            }
+            
+            // Reset file input
+            fileInput.value = '';
+        });
+        
+        // Add file to list
+        function addFileToList(file) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${file.name}</span>
+                <span class="remove-file" data-filename="${file.name}">×</span>
+            `;
+            fileList.appendChild(li);
+            
+            // Add event listener to remove button
+            li.querySelector('.remove-file').addEventListener('click', function() {
+                const filename = this.getAttribute('data-filename');
+                removeFile(filename);
+                li.remove();
+            });
+        }
+        
+        // Remove file from selected files
+        function removeFile(filename) {
+            selectedFiles = selectedFiles.filter(file => file.name !== filename);
+        }
+        
+        // Generate article
+        generateBtn.addEventListener('click', function() {
+            const topic = topicInput.value.trim();
+            
+            if (!topic) {
+                showStatus('Please enter a topic for your article.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            showLoading(true);
+            clearStatus();
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('topic', topic);
+            formData.append('use_wikipedia', useWikipedia.checked);
+            
+            // Append files if any
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+            
+            // Send request
+            fetch('/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                
+                if (data.error) {
+                    showStatus(data.error, 'error');
+                    return;
+                }
+                
+                // Display article
+                displayArticle(data.headline, data.content, data.full_article);
+            })
+            .catch(error => {
+                showLoading(false);
+                showStatus('An error occurred: ' + error.message, 'error');
+            });
+        });
+        
+        // Display article
+        function displayArticle(headlineText, contentText, fullArticle) {
+            // Update DOM
+            headline.textContent = headlineText;
+            articleText.textContent = contentText;
+            
+            // Hide empty state and show article
+            emptyState.style.display = 'none';
+            articleContainer.style.display = 'block';
+            outputActions.style.display = 'flex';
+            outputSection.classList.remove('empty-state');
+            
+            // Store full article for download/copy
+            outputSection.dataset.fullArticle = fullArticle;
+            
+            // Show success message
+            showStatus('Article generated successfully!', 'success');
+        }
+        
+        // Copy to clipboard
+        copyBtn.addEventListener('click', function() {
+            const fullArticle = outputSection.dataset.fullArticle;
+            
+            navigator.clipboard.writeText(fullArticle)
+                .then(() => {
+                    showStatus('Article copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    showStatus('Failed to copy article: ' + err, 'error');
+                });
+        });
+        
+        // Download as text
+        downloadTextBtn.addEventListener('click', function() {
+            const fullArticle = outputSection.dataset.fullArticle;
+            const blob = new Blob([fullArticle], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'newspaper_article.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        // Download as PDF
+        downloadPdfBtn.addEventListener('click', function() {
+            const fullArticle = outputSection.dataset.fullArticle;
+            
+            // Create a form to submit to a PDF conversion endpoint
+            // This is a simple approach - in production you'd want to use a proper PDF library
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/download-pdf';
+            form.style.display = 'none';
+            
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'article';
+            input.value = fullArticle;
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            
+            // Fallback for demo - alert user that this feature needs server-side implementation
+            alert('PDF generation requires server-side implementation with a PDF library. In a production environment, this would generate a PDF file with proper newspaper formatting.');
+            
+            // Remove the form
+            document.body.removeChild(form);
+        });
+        
+        // Show/hide loading state
+        function showLoading(isLoading) {
+            if (isLoading) {
+                spinner.style.display = 'block';
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Generating...';
+            } else {
+                spinner.style.display = 'none';
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate Article';
+            }
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            statusElement.textContent = message;
+            statusElement.className = 'status ' + type;
+            statusElement.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    clearStatus();
+                }, 5000);
+            }
+        }
+        
+        // Clear status message
+        function clearStatus() {
+            statusElement.style.display = 'none';
+            statusElement.textContent = '';
+        }
+    </script>
+</body>
+</html>
