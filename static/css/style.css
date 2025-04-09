@@ -1,0 +1,88 @@
+/* Custom styles for Newspaper Article Generator */
+
+/* Typography improvements */
+body {
+    line-height: 1.6;
+}
+
+.article-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.article-header h2 {
+    line-height: 1.2;
+    margin-bottom: 1rem;
+}
+
+.article-content p {
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+/* Form enhancements */
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Print styles */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    .container {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .card-header, .btn, .alert, footer {
+        display: none !important;
+    }
+    
+    .article-container {
+        padding: 0 !important;
+    }
+}
+
+/* Loading state for generate button */
+#generateBtn.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+#generateBtn.loading::after {
+    content: "";
+    position: absolute;
+    width: 1.25rem;
+    height: 1.25rem;
+    top: calc(50% - 0.625rem);
+    left: calc(50% - 0.625rem);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .display-5 {
+        font-size: 1.75rem;
+    }
+    
+    .article-container {
+        padding: 1rem;
+    }
+}
