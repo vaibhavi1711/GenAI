@@ -1,1 +1,1 @@
-# GenAI
+# GenAI - Newspaper Article Generator
